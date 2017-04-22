@@ -6,7 +6,7 @@
   <script src="./jquery-3.2.1.min.js"></script>
 </head>
 <body lang="en">
-  <form role="form" id="chat_form"  return false;"> 
+  <form role="form"> 
     <button type="button" id="findip" class="btn btn-primary">
       Find Device
     </button>
@@ -46,7 +46,7 @@
       }
 
       $("#findip").click(function () {
-        $.get("http://127.0.0.1:3000/",
+        $.get("http://127.0.0.1:3000/devices",
           function (data, status) {
             $('#responseMessage').val(data);
             deviceIp = data;

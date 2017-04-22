@@ -1,7 +1,7 @@
 {
   "name": "sockets",
-  "version": "1.0.0",
-  "description": "poc",
+  "version": "0.0.1",
+  "description": "P2 poc",
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.17.1",
@@ -11,8 +11,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC"

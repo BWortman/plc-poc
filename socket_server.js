@@ -1,41 +1,57 @@
-var net = require('net');
+const net = require('net');
+const events = require('events');
 
-var WebSocketServer = require('ws').Server,
+let eventEmitter = new events.EventEmitter();
+
+let WebSocketServer = require('ws').Server,
   wss = new WebSocketServer({ port: 8181 });
 
-wss.on('connection', function (ws) {
+let serverList = [];
+
+wss.on('connection', (websocket) => {
   console.log('client connected');
-  ws.send('connected!');
-  ws.on('message', function (message) {
-    var jsonMessage = JSON.parse(message);
+  websocket.send('connected!');
+
+  websocket.on('message', (message) => {
+    let jsonMessage = JSON.parse(message);
     console.log(`command: ${jsonMessage.command}, ip: ${jsonMessage.ip}`);
 
+    let tester;
+    if (serverList.length < 1) {
+      tester = new P2Tester(jsonMessage.ip);
+      serverList.push(tester);
+    }
+    else {
+      tester = serverList[0];
+    }
 
-    testP2(ws, jsonMessage.command, jsonMessage.ip);
-    //ws.send('received ' + message);
+    eventEmitter.on('p2DataReceived', (data) => {
+      websocket.send(data.toString());
+    });
+    tester.sendCommandToDevice(jsonMessage.command, websocket);
   });
 });
 
+function P2Tester(deviceIp) {
+  let self = this;
+  this.client = new net.Socket();
 
-
-function testP2(ws, command, ip) {
-  var client = new net.Socket();
-  client.connect(10001,ip, function () {
+  this.client.connect(10001, deviceIp, () => {
     console.log('Connected to P2');
-    client.write(command + '\r\n');
+  });
+
+  this.sendCommandToDevice = (command) => {
+    self.client.write(command + '\r\n');
     console.log('Sent command, waiting on response...');
-  });
+  };
 
-  client.on('data', function (data) {
+  this.client.on('data', (data) => {
     console.log('got response!');
-    console.log('Received: ' + data);
-
-    ws.send(data.toString());
-
-    //client.destroy(); // kill client after server's response
+    console.log('Received: ', data);
+    eventEmitter.emit('p2DataReceived', data.toString());
   });
 
-  client.on('close', function () {
+  this.client.on('close', () => {
     console.log('Connection closed');
-  });}
-
+  });
+}
